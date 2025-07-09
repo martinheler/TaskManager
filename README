@@ -1,0 +1,11 @@
+# Frontend
+cd client
+npm install
+npm run dev
+
+# Backend
+cd api
+func start
+
+# DB
+Run /sql/schema.sql and /sql/seed.sql in local SQL Server

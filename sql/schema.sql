@@ -1,0 +1,21 @@
+
+CREATE DATABASE TaskManagerDb;
+GO
+USE TaskManagerDb;
+GO
+
+CREATE TABLE Tasks (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Title NVARCHAR(255) NOT NULL,
+    Description NVARCHAR(MAX),
+    DueDate DATETIME NOT NULL,
+    Status NVARCHAR(50) NOT NULL,
+    CreatedBy NVARCHAR(255),
+    AssignedTo NVARCHAR(255)
+);
+
+CREATE TABLE Users (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Email NVARCHAR(255) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(255) NOT NULL
+);
