@@ -28,6 +28,7 @@ namespace TaskManager.api
                 {
                     services.AddScoped<ITaskRepository, TaskRepository>();
                     services.AddScoped<IUserRepository, UserRepository>();
+                    services.AddScoped<TaskService>();
                     services.AddSingleton<JwtService>();
 
                 })

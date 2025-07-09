@@ -21,25 +21,30 @@ namespace TaskManager.Functions
     {
         private readonly ITaskRepository _repo;
         private readonly JwtService _jwt;
+        private readonly TaskService _service;
 
-        public TaskFunction(ITaskRepository repo, JwtService jwt)
+        public TaskFunction(ITaskRepository repo, JwtService jwt, TaskService service)
         {
             _repo = repo;
             _jwt = jwt;
+            _service = service;
         }
 
         private bool IsAuthorized(HttpRequestData req, out ClaimsPrincipal? user, out HttpResponseData? errorResponse)
         {
-            var authHeader = req.Headers.GetValues("Authorization").FirstOrDefault();
-            user = null;
             errorResponse = null;
+            user = null;
 
-            if (authHeader is null)
+            if (!req.Headers.TryGetValues("Authorization", out var authHeaders))
             {
+                errorResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
+                errorResponse.WriteStringAsync("Missing Authorization header").Wait();
                 return false;
             }
 
-            user = _jwt.ValidateToken(authHeader.Replace("Bearer ", ""));
+            var token = authHeaders.FirstOrDefault()?.Replace("Bearer ", "");
+            user = _jwt.ValidateToken(token);
+
             if (user is null)
             {
                 errorResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
@@ -61,14 +66,14 @@ namespace TaskManager.Functions
             return response;
         }
 
-        [Function("GetTaskById")]
+         [Function("GetTaskById")]
         public async Task<HttpResponseData> GetTaskById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "tasks/{id:int}")] HttpRequestData req,
             int id,
             FunctionContext context)
         {
             if (!IsAuthorized(req, out var user, out var unauthorized)) return unauthorized!;
-            var task = await _repo.GetByIdAsync(id);
+            var task = await _service.GetByIdAsync(id);
             var response = req.CreateResponse(task is null ? HttpStatusCode.NotFound : HttpStatusCode.OK);
             if (task != null) await response.WriteAsJsonAsync(task);
             return response;
